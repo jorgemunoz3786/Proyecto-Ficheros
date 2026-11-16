@@ -10,6 +10,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Scanner;
+import model.Reserva;
 
 /**
  * Gestor de reservas AirTortilla.
@@ -329,11 +330,5 @@ public class AirTortillaManager {
             System.err.println("No se pudo leer el fichero: " + e.getMessage());
         }
     }
-    static void probarConexion() {
-        try (java.sql.Connection c = db.Conexion.obtener()) {
-            System.out.println("Conexión OK a: " + c.getCatalog());
-        } catch (java.sql.SQLException e) {
-            System.err.println("Fallo de conexión: " + e.getMessage());
-        }
-    }
+
 }
