@@ -1,9 +1,11 @@
 
+import service.ImportadorCSV;
+
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-
+        ImportadorCSV.importar("data/viajes.csv");
         String rutaEntrada = args.length > 0 ? args[0] : "data/viajes.csv";
         String carpetaSalida = args.length > 1 ? args[1] : "output_airtortilla";
 

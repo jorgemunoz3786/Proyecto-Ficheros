@@ -71,4 +71,44 @@ public class ReservaDAO {
             }
         }
     }
+
+    /** Cuántas reservas hay guardadas. */
+    public int contar() throws SQLException {
+        try (Connection con = Conexion.obtener();
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM reservas")) {
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
+    /** Guarda todas las reservas en una transacción: o entran todas o ninguna. */
+    public void insertarVarias(ArrayList<Reserva> reservas) throws SQLException {
+        String sql = "INSERT INTO reservas (codigo, nombre, destino, origen, fecha_registro, localizador) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (Connection con = Conexion.obtener()) {
+            con.setAutoCommit(false);   // empieza la transacción
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
+                for (Reserva r : reservas) {
+                    ps.setString(1, r.getId());
+                    ps.setString(2, r.getNombre());
+                    ps.setString(3, r.getDestino());
+                    ps.setString(4, r.getOrigen());
+                    ps.setDate(5, Date.valueOf(r.getFecha()));
+                    if (r.getLocalizador().isEmpty()) {
+                        ps.setNull(6, java.sql.Types.VARCHAR);
+                    } else {
+                        ps.setString(6, r.getLocalizador());
+                    }
+                    ps.addBatch();      // la apunta, sin enviarla todavía
+                }
+                ps.executeBatch();      // las envía todas juntas
+                con.commit();           // confirma
+            } catch (SQLException e) {
+                con.rollback();         // algo falló: deshace todo
+                throw e;
+            }
+        }
+    }
 }
