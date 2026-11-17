@@ -1,23 +1,19 @@
-
 import service.ImportadorCSV;
 
 import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
-        ImportadorCSV.importar("data/viajes.csv");
         String rutaEntrada = args.length > 0 ? args[0] : "data/viajes.csv";
         String carpetaSalida = args.length > 1 ? args[1] : "output_airtortilla";
 
         Scanner teclado = new Scanner(System.in);
-
-
         boolean salir = false;
 
         while (!salir) {
             System.out.println("\n=== GESTOR DE RESERVAS AIRTORTILLA ===");
-            System.out.println("1. Modalidad Total (generar ficheros por destino y fecha)");
-            System.out.println("2. Modalidad Línea a Línea (consultar ficheros)");
+            System.out.println("1. Importar CSV a la base de datos");
+            System.out.println("2. Exportar reservas a ficheros (por destino y fecha)");
             System.out.println("3. Salir");
             System.out.print("Elige una opción: ");
 
@@ -25,9 +21,9 @@ public class Main {
             String opcion = teclado.nextLine().trim();
 
             if (opcion.equals("1")) {
-                AirTortillaManager.ejecutarModoTotal(rutaEntrada, carpetaSalida);
+                ImportadorCSV.importar(rutaEntrada);
             } else if (opcion.equals("2")) {
-                AirTortillaManager.ejecutarModoLineaALinea(rutaEntrada, carpetaSalida, teclado);
+                AirTortillaManager.ejecutarModoTotal(carpetaSalida);
             } else if (opcion.equals("3")) {
                 System.out.println("Saliendo del sistema...");
                 salir = true;
