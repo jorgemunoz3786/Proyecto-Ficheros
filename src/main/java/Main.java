@@ -1,12 +1,14 @@
+import model.RegistroAuditoria;
+import model.Rol;
 import model.Usuario;
 import service.AuthService;
 import service.ImportadorCSV;
 
 import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Scanner;
-import model.Rol;
-import java.sql.SQLIntegrityConstraintViolationException;
 
 public class Main {
 
@@ -46,6 +48,7 @@ public class Main {
             if (esAdmin) {
                 System.out.println("3. Crear usuario");
                 System.out.println("4. Borrar todas las reservas");
+                System.out.println("5. Ver auditoría");
             }
             System.out.println("0. Salir");
             System.out.print("Elige una opción: ");
@@ -60,8 +63,10 @@ public class Main {
             } else if (opcion.equals("3") && esAdmin) {
                 altaUsuario(teclado, auth, usuarioActual);
             } else if (opcion.equals("4") && esAdmin) {
-                borrarReservas(teclado, auth, usuarioActual);}
-            else if (opcion.equals("0")) {
+                borrarReservas(teclado, auth, usuarioActual);
+            } else if (opcion.equals("5") && esAdmin) {
+                verAuditoria(auth, usuarioActual);
+            } else if (opcion.equals("0")) {
                 System.out.println("Saliendo del sistema...");
                 salir = true;
             } else {
@@ -152,6 +157,30 @@ public class Main {
             System.out.println("Reservas borradas: " + borradas);
         } catch (SQLException e) {
             System.err.println("No se pudo borrar: " + e.getMessage());
+        } catch (SecurityException e) {
+            System.out.println(e.getMessage());
+        }
+
+    }
+    /** Muestra los últimos 20 apuntes de auditoría (solo ADMIN). */
+    private static void verAuditoria(AuthService auth, Usuario quienPide) {
+        System.out.println("\n--- ÚLTIMOS APUNTES DE AUDITORÍA ---");
+        try {
+            ArrayList<RegistroAuditoria> registros = auth.verAuditoriaComo(quienPide, 20);
+            if (registros.isEmpty()) {
+                System.out.println("Todavía no hay apuntes.");
+                return;
+            }
+            for (RegistroAuditoria r : registros) {
+                System.out.println(r.getFechaHora().toString().replace('T', ' ')
+                        + " | " + r.getUsername()
+                        + " | " + r.getAccion()
+                        + " | " + r.getTablaAfectada()
+                        + (r.getRegistroId() != null ? " #" + r.getRegistroId() : "")
+                        + (r.getDetalle() != null ? " | " + r.getDetalle() : ""));
+            }
+        } catch (SQLException e) {
+            System.err.println("No se pudo leer la auditoría: " + e.getMessage());
         } catch (SecurityException e) {
             System.out.println(e.getMessage());
         }

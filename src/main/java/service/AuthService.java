@@ -8,12 +8,17 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import db.AuditoriaDAO;
+import model.RegistroAuditoria;
+import java.util.ArrayList;
+
 import db.ReservaDAO;
 
 public class AuthService {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final ReservaDAO reservaDAO = new ReservaDAO();
+    private final AuditoriaDAO auditoriaDAO = new AuditoriaDAO();
 
     /** Devuelve el usuario si las credenciales son correctas y está activo; si no, vacío. */
     public Optional<Usuario> login(String username, String password) throws SQLException {
@@ -70,5 +75,13 @@ public class AuthService {
                     borradas + " reservas borradas");
         }
         return borradas;
+    }
+    /** Devuelve los últimos apuntes de auditoría. Solo un ADMIN puede consultarlos. */
+    public ArrayList<RegistroAuditoria> verAuditoriaComo(Usuario quienPide, int limite)
+            throws SQLException {
+        if (quienPide.getRol() != Rol.ADMIN) {
+            throw new SecurityException("Solo un ADMIN puede consultar la auditoría.");
+        }
+        return auditoriaDAO.ultimos(limite);
     }
 }
