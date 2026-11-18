@@ -8,9 +8,12 @@ import org.mindrot.jbcrypt.BCrypt;
 import java.sql.SQLException;
 import java.util.Optional;
 
+import db.ReservaDAO;
+
 public class AuthService {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
+    private final ReservaDAO reservaDAO = new ReservaDAO();
 
     /** Devuelve el usuario si las credenciales son correctas y está activo; si no, vacío. */
     public Optional<Usuario> login(String username, String password) throws SQLException {
@@ -45,5 +48,27 @@ public class AuthService {
         }
         crearUsuario("admin", clave, Rol.ADMIN);
         System.out.println("Usuario inicial 'admin' creado.");
+    }
+
+    /** Alta de usuario hecha por alguien concreto. Solo un ADMIN activo puede hacerla. */
+    public int crearUsuarioComo(Usuario quienPide, String username, String password, Rol rol)
+            throws SQLException {
+        if (quienPide.getRol() != Rol.ADMIN) {
+            throw new SecurityException("Solo un ADMIN puede dar de alta usuarios.");
+        }
+        return crearUsuario(username, password, rol);
+    }
+    /** Borra todas las reservas. Solo un ADMIN puede hacerlo. Devuelve cuántas se borraron. */
+    public int borrarReservasComo(Usuario quienPide) throws SQLException {
+        if (quienPide.getRol() != Rol.ADMIN) {
+            throw new SecurityException("Solo un ADMIN puede borrar reservas.");
+        }
+        int borradas = reservaDAO.borrarTodas();
+        if (borradas > 0) {
+            AuditoriaService.registrar(quienPide, AuditoriaService.BORRAR_RESERVAS,
+                    AuditoriaService.TABLA_RESERVAS, null,
+                    borradas + " reservas borradas");
+        }
+        return borradas;
     }
 }

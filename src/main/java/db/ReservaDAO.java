@@ -111,4 +111,11 @@ public class ReservaDAO {
             }
         }
     }
+    /** Borra todas las reservas. Devuelve cuántas se han borrado. */
+    public int borrarTodas() throws SQLException {
+        try (Connection con = Conexion.obtener();
+             Statement st = con.createStatement()) {
+            return st.executeUpdate("DELETE FROM reservas");
+        }
+    }
 }

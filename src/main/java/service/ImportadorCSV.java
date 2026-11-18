@@ -2,7 +2,7 @@ package service;
 
 import db.ReservaDAO;
 import model.Reserva;
-
+import model.Usuario;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,7 +19,7 @@ public class ImportadorCSV {
     private static final DateTimeFormatter FORMATO_FECHA_ALTERNATIVO = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     /** Importa el CSV a MySQL. Solo si la tabla reservas está vacía. */
-    public static void importar(String rutaCsv) {
+    public static void importar(String rutaCsv, Usuario quien)  {
         ReservaDAO dao = new ReservaDAO();
         try {
             int existentes = dao.contar();
@@ -33,6 +33,13 @@ public class ImportadorCSV {
             ArrayList<Reserva> reservas = leerReservas(rutaCsv, errores);
 
             dao.insertarVarias(reservas);
+
+            if (!reservas.isEmpty()) {
+                AuditoriaService.registrar(quien, AuditoriaService.IMPORTAR_CSV,
+                        AuditoriaService.TABLA_RESERVAS, null,
+                        reservas.size() + " reservas importadas desde " + rutaCsv
+                                + " (" + errores.size() + " filas rechazadas)");
+            }
 
             System.out.println("Importación completada. Reservas guardadas: " + reservas.size()
                     + " | Filas rechazadas: " + errores.size());
@@ -133,4 +140,6 @@ public class ImportadorCSV {
         ReservaService.asignarLocalizadores(reservas);
         return reservas;
     }
+
+
 }
